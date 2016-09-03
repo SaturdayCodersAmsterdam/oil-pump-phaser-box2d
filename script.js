@@ -1,14 +1,9 @@
 var game = new Phaser.Game(640,480, Phaser.CANVAS, 'world', {
   preload: preload, create: create, update: update, render: render });
 
-var armX = 46;
-var armY= 93;
-var pumpX = 62;
-var pumpY= 168;
-
 
 function preload() {
-    game.load.image('armSprite', 'assets/arm.png');
+    game.load.image('arm', 'assets/arm.png');
     game.load.image('pump', 'assets/pump.png');
     game.load.image('weight', 'assets/weight.png');
 }
@@ -31,63 +26,37 @@ function create() {
     ground.setRectangle(640, 20, 0, 0, 0);
 	
 	
-
-    //  Tall skinny rectangle body for the crank
-	// CONSTRUCTOR new Body(game, sprite, x, y, mass)
-	// http://phaser.io/docs/2.4.2/Phaser.Physics.P2.Body.html
-    var crank = new Phaser.Physics.Box2D.Body(this.game, null, game.world.centerX, 360, 2);
-    crankSprite = game.add.sprite( game.world.centerX, 310, 'weight');
-    crankSprite.anchor.setTo(0.5, 0.5);
 	
-	// setCircle
-	// http://phaser.io/examples/v2/box2d/circle-body
-	crank.setCircle(72);
-
-	// bodyA, bodyB, ax, ay, bx, by, motorSpeed, motorTorque, motorEnabled, lowerLimit, upperLimit, limitEnabled
 	
+	//  Tall skinny rectangle body for the crank
+	var crank = game.add.sprite( game.world.centerX, 310, 'weight');
+	crank.anchor.setTo(0.5, 0.5);
+    game.physics.box2d.enable(crank);
+	crank.body.setCircle(crank.width / 2);
     //Revolute joint with motor enabled attaching the crank to the ground. This is where all the power for the slider crank comes from
-    game.physics.box2d.revoluteJoint(ground, crank, 0, -160, 0, 0, 250, 50, false, -45, 60, true);
-	
+    game.physics.box2d.revoluteJoint(ground, crank, 0, -80, 0, 0, 250, 50, true);
+    
     //  Tall skinny rectangle body for the arm. Connects the crank to the piston
-    var arm = new Phaser.Physics.Box2D.Body(this.game, null, game.world.centerX, 360, 2);
-    arm.setRectangle(50, 300, 0, 0, 0);
+    var arm = game.add.sprite( game.world.centerX, game.world.centerY, 'pump');
+    game.physics.box2d.enable(arm);
+    arm.body.setRectangle(10, 179, 0, 0, 0);
+	//arm.anchor.setTo(0, 0.5);
     //revolute joint to attach the crank to the arm
-    //game.physics.box2d.revoluteJoint(crank, arm, 0, 0, 0, 135);
+    game.physics.box2d.revoluteJoint(crank, arm, 0, -30, 0, 60);
+    
 	
-	// http://phaser.io/examples/v2/box2d/revolute-joint
-	// bodyA, bodyB, ax, ay, bx, by, motorSpeed, motorTorque, motorEnabled, lowerLimit, upperLimit, limitEnabled
-	game.physics.box2d.revoluteJoint(crank, arm, 0, 0, 0, 72, 0, 0, true, -45, 45, true);
-    //bodyAs.push(arm.body);
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-
-	
-	
-	
-	
-
-    //piston = game.add.sprite( game.world.centerX, 300, 'armSprite');
-    //piston.anchor.setTo(0.5, 0.5);
-    //game.physics.box2d.enable(piston);
-    //  Square body for the piston. This will be pushed up and down by the crank
-    //var piston = new Phaser.Physics.Box2D.Body(this.game, null, game.world.centerX, 300, 2);
-    //piston.setRectangle(40, 40, 0, 0, 0);
+	//  Square body for the piston. This will be pushed up and down by the crank
+    var piston = game.add.sprite( 0, 310, 'arm');
+	game.physics.box2d.enable(piston);
+    piston.body.setRectangle(301, 112, 150, 0, 0);
+	piston.anchor.setTo(0, 0.5);
     //revolute joint to join the arm and the piston
-    //game.physics.box2d.revoluteJoint(arm, piston, 0, -60, 0, 0);
+	// bodyA, bodyB, ax, ay, bx, by, motorSpeed, motorTorque, motorEnabled, lowerLimit, upperLimit, limitEnabled
+    game.physics.box2d.revoluteJoint(arm, piston, 0, -112, 0, 0);
     //prismatic joint between the piston and the ground, this joints purpose is just to restrict the piston from moving on the x axis
-    //game.physics.box2d.prismaticJoint(ground, piston, 0, 1, 0, 0, 0, 0);
+    game.physics.box2d.prismaticJoint(ground, piston, 0, 1, 0, 0, 0, 0);
+    
+
 
     // Set up handlers for mouse events
     game.input.onDown.add(mouseDragStart, this);
